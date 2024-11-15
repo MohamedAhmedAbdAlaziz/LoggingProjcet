@@ -1,35 +1,61 @@
 ﻿using Microsoft.Extensions.Logging;
+ 
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
-#region secret 🤭
+
+using IHost host = Host.CreateDefaultBuilder(args)
+    .ConfigureLogging(x =>
+    {
+        x.AddJsonConsole();
+ 
+    }).Build();
+
+
+var looger = host.Services.GetRequiredService<ILogger<Program>>();
+
+
 
 using var loggerFactory = LoggerFactory.Create(builder =>
 {
-#pragma warning disable CA1416
-    builder
-        .AddConsole();
-#pragma warning restore CA1416
+
+    builder.AddJsonConsole(option =>
+    {
+        option.IncludeScopes = false;
+        option.TimestampFormat = "HH:mm:ss";
+        option.JsonWriterOptions = new System.Text.Json.JsonWriterOptions
+        {
+            Indented = true
+        };
+    });
+    
+    builder.ClearProviders();
+    builder.AddSystemdConsole();
+    builder.SetMinimumLevel(LogLevel.Debug);
 });
 
 ILogger CreateLogger()
 {
     return loggerFactory.CreateLogger("Course");
 }
-#endregion
 
 ILogger logger = loggerFactory.CreateLogger<Program>();
 
 logger.LogInformation("Helow");
+logger.Log(LogLevel.Information , 1 ,"Hello world");
+logger.Log(LogLevel.Error , 2 ,"Hello world");
+logger.LogDebug(3,"Hello LogDebug");
 
 
 
-ILogger logger2 = CreateLogger();
+//ILogger logger2 = CreateLogger();
 
-logger2.LogInformation("Cources");
+//logger2.LogInformation("Cources");
 
 
-ILogger logger3 = loggerFactory.CreateLogger<Sallam>();
+//ILogger logger3 = loggerFactory.CreateLogger<Sallam>();
 
-logger3.LogInformation("Cources");
+//logger3.LogInformation("Cources");
 
 
 
