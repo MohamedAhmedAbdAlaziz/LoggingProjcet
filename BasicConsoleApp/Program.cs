@@ -2,6 +2,7 @@
  
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Console;
 
 
 using IHost host = Host.CreateDefaultBuilder(args)
@@ -28,10 +29,20 @@ using var loggerFactory = LoggerFactory.Create(builder =>
             Indented = true
         };
     });
-    
-    builder.ClearProviders();
-    builder.AddSystemdConsole();
-    builder.SetMinimumLevel(LogLevel.Debug);
+    builder.AddFilter(x => x >= LogLevel.Debug);
+    builder.AddFilter((provider, catigory, logLevel) =>
+    {
+        return provider.Contains("Console") &&
+          catigory!.Contains("Microsoft.Extentions.Hosting") &&
+          logLevel >= LogLevel.Debug;
+    });
+
+    builder.AddFilter("System",LogLevel.Debug)
+    .AddFilter<ConsoleLoggerProvider>("Microsoft",LogLevel.Information)
+    .AddFilter<ConsoleLoggerProvider>("Microsoft.Extentions.Hosting.Internal.Host", LogLevel.Information);
+  //  builder.ClearProviders();
+  //builder.AddSystemdConsole();
+   // builder.SetMinimumLevel(LogLevel.Debug);
 });
 
 ILogger CreateLogger()
